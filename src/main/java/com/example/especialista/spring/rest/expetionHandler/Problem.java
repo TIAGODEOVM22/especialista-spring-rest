@@ -3,9 +3,9 @@ package com.example.especialista.spring.rest.expetionHandler;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Builder
@@ -16,10 +16,27 @@ public class Problem {
     private String type;
     private String title;
     private String detail;
-
     private String userMessage; /*MSG para o usuario*/
-
     private LocalDateTime timestamp;
+    private List<Field> fields;
+
+    public Problem(List<Field> fields) {
+        this.fields = fields;
+    }
+
+    public Problem(Integer status, String type, String title, String detail, String userMessage, LocalDateTime timestamp, List<Field> fields) {
+        this.status = status;
+        this.type = type;
+        this.title = title;
+        this.detail = detail;
+        this.userMessage = userMessage;
+        this.timestamp = timestamp;
+        this.fields = fields;
+    }
+
+    public Problem() {
+
+    }
 
     public String getUserMessage() {
         return userMessage;
@@ -69,6 +86,63 @@ public class Problem {
         this.detail = detail;
     }
 
+    public void setFields(List<Field> fields) {
+        this.fields = fields;
+    }
+
+    public List<Field> getFields() {
+        return fields;
+    }
+
+    @Getter
+    public static class Field{
+        private String name;
+        private String userMessage;
+
+        public Field() {
+
+        }
+
+        public Field name(String name){
+            this.name = name;
+            return this;
+        }
+        public Field userMessage(String userMessage){
+            this.userMessage = userMessage;
+            return this;
+        }
+        public Field build(){
+            Field field = new Field();
+            field.name(this.name);
+            field.userMessage(this.userMessage);
+            return field;
+        }
+
+        public Field(String name, String userMessage) {
+            this.name = name;
+            this.userMessage = userMessage;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public String getUserMessage() {
+            return userMessage;
+        }
+
+        public void setUserMessage(String userMessage) {
+            this.userMessage = userMessage;
+        }
+
+        public static Field builder(){
+            return new Field();
+       }
+    }
 
     public static class ProblemBuilder {
         private Integer status;
@@ -80,6 +154,7 @@ public class Problem {
         private String userMessage;
 
         private LocalDateTime timestamp;
+        private List<Field> fields;
 
         public ProblemBuilder timestamp(LocalDateTime timestamp){
             this.timestamp = timestamp;
@@ -111,6 +186,10 @@ public class Problem {
             return this;
         }
 
+        public ProblemBuilder fields (List<Field> fields){
+            this.fields = fields;
+            return this;
+        }
 
         public Problem build() {
             Problem problem = new Problem();
@@ -120,6 +199,8 @@ public class Problem {
             problem.setTitle(this.title);
             problem.setDetail(this.detail);
             problem.setUserMessage(this.userMessage);
+            problem.setFields(this.fields);
+
             return problem;
         }
     }

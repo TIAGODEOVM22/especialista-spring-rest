@@ -12,6 +12,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
@@ -23,14 +25,41 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
-
-@ControllerAdvice       /*CONTROLADOR DE EX PARA TODAS AS CLASSES*/
+/*CONTROLADOR DE EX PARA TODAS AS CLASSES*/
+@ControllerAdvice
 public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 
 
     public static final String USER_MESSAGE_GENERICO = "Ocorreu um erro interno inesperado no sistema. "
             + "Tente novamente e se o problema persistir, entre em contato "
             + "com o administrador do sistema.";
+
+    /*TRATA A EX DE CONSTRATINTS VIOLADAS
+    * retornando uma lista com os atributos que possuem erros*/
+    @Override
+    protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,
+                                                                HttpHeaders headers, HttpStatus status, WebRequest request){
+        ProblemType problemType = ProblemType.DADOS_INVALIDOS;
+        String detail = "Um ou mais campos estão inválidos, faça o preenchimento corretamente.";
+
+        BindingResult bindingResult = ex.getBindingResult();
+
+        List<Problem.Field> problemFields = bindingResult.getFieldErrors()
+                .stream()
+                .map(fieldError -> Problem.Field.builder()
+                        .name(fieldError.getObjectName())
+                        .userMessage(fieldError.getDefaultMessage())
+                        .build())
+                        .collect(Collectors.toList());
+
+
+        Problem problem = createProblemBuilder(status, problemType, detail)
+                .userMessage(detail)
+                .fields(problemFields)
+                .build();
+
+        return handleExceptionInternal(ex, problem,headers, status, request);
+    }
 
     /*TRATA QUANDO PASSAMOS UMA PROPRIEDADE DESCONHECIDA*/
     private ResponseEntity<Object> handlePropertyBinding(PropertyBindingException ex,
@@ -52,7 +81,7 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         return handleExceptionInternal(ex, problem, headers, status, request);
     }
 
-    /*TRATA QUANDO PASSAMOS ALGUMA INFORRMAÇÃO ERRADA NO CORPO DO JSON*/
+    /*TRATA QUANDO PASSAMOS ALGUMA INFORMAÇÃO ERRADA NO CORPO DO JSON*/
     @Override
     protected ResponseEntity<Object> handleHttpMessageNotReadable(HttpMessageNotReadableException ex,
                                                                   HttpHeaders headers, HttpStatus status, WebRequest request) {
@@ -139,11 +168,12 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         return handleExceptionInternal(ex, problem, new HttpHeaders(), status, request);
     }
 
-
+//    Se body for null: Um objeto do tipo Problem é criado
+//    Se body for uma String: Ele constrói um objeto Problem semelhante ao acima,
+//    mas com o title preenchido com o valor da String recebida no body
     @Override
     protected ResponseEntity<Object> handleExceptionInternal(Exception ex, Object body, HttpHeaders headers,
                                                              HttpStatus status, WebRequest request) {
-
         if (body == null) {
             body = Problem.builder()
                     .timestamp(LocalDateTime.now())
@@ -159,11 +189,14 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
                     .userMessage(USER_MESSAGE_GENERICO)
                     .build();
         }
-
-
         return super.handleExceptionInternal(ex, body, headers, status, request);
     }
 
+    //TRATA DOIS POSSÍVEIS ERROS// SE a exceção for uma MethodArgumentTypeMismatchException,
+    //o método chama noso método handleMethodArgumentTypeMismatch
+    //SE a exceção não for do tipo MethodArgumentTypeMismatchException,
+    //o método chama super.handleTypeMismatch, que delega o tratamento ao
+    //comportamento padrão do Spring para TypeMismatchException
     @Override
     protected ResponseEntity<Object> handleTypeMismatch(TypeMismatchException ex, HttpHeaders headers,
                                                         HttpStatus status, WebRequest request) {
@@ -172,10 +205,10 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
             return handleMethodArgumentTypeMismatch(
                     (MethodArgumentTypeMismatchException) ex, headers, status, request);
         }
-
         return super.handleTypeMismatch(ex, headers, status, request);
     }
 
+    /*EX: O parâmetro de URL 'id' recebeu o valor 'abc', que é de um tipo inválido.*/
     private ResponseEntity<Object> handleMethodArgumentTypeMismatch(
             MethodArgumentTypeMismatchException ex, HttpHeaders headers,
             HttpStatus status, WebRequest request) {
@@ -193,11 +226,9 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         return handleExceptionInternal(ex, problem, headers, status, request);
     }
 
-
-
+    /*_______CONSTROI UM PROBLEMA JÁ PREENCHIDO______*/
     private Problem.ProblemBuilder createProblemBuilder(HttpStatus status,
                                                         ProblemType problemType, String detail) {
-
         return Problem.builder()
                 .timestamp(LocalDateTime.now())
                 .status(status.value())
@@ -205,12 +236,18 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
                 .title(problemType.getTitle())
                 .detail(detail);
     }
+
+    /*AJUDA A SEPARAR NOMES DE ATRIBUTOS COM PROBLEMAS NA DESERIALIZAÇÃO ENTRE OUTROS*/
     private String joinPath(List<JsonMappingException.Reference> references) {
-        return references.stream()
-                .map(JsonMappingException.Reference::getFieldName)
-                .collect(Collectors.joining("."));
+        return references.stream()/*Usa stream() para criar um fluxo dos elementos da lista references.*/
+                .map(JsonMappingException.Reference::getFieldName)/*extrai o nome de cada campo Reference na lista.*/
+                .collect(Collectors.joining("."));/*separa com PONTO os nomes da lista Reference*/
+
+        /*EM JsonMappingExceptioN estão incluídas referências
+         que representam o "caminho" do campo problemático*/
     }
 
+    /*__________TRATA ERROS DE URL INEXISTENTE________*/
     @Override
     protected ResponseEntity<Object> handleNoHandlerFoundException(NoHandlerFoundException ex, HttpHeaders headers,
                                                                    HttpStatus status, WebRequest request) {
@@ -226,6 +263,7 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 
     }
 
+    /*_______TRATA ERROS GERAIS QUE NÃO FORAM CAPTURADOS_______*/
     @ExceptionHandler(Exception.class)
     /* essa anotação garante que este métodp é chamado quando Exception.class ou qualquer uma
     de suas subclasses for lançada durante o processamento de uma requisição.*/
