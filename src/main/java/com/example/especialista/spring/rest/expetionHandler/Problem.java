@@ -1,3 +1,4 @@
+
 package com.example.especialista.spring.rest.expetionHandler;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -141,7 +142,7 @@ public class Problem {
 
         public static Field builder(){
             return new Field();
-       }
+        }
     }
 
     public static class ProblemBuilder {

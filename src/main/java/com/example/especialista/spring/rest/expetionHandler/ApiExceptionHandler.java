@@ -38,27 +38,26 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
     * retornando uma lista com os atributos que possuem erros*/
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,
-                                                                HttpHeaders headers, HttpStatus status, WebRequest request){
+                                                                  HttpHeaders headers, HttpStatus status, WebRequest request) {
+
         ProblemType problemType = ProblemType.DADOS_INVALIDOS;
-        String detail = "Um ou mais campos estão inválidos, faça o preenchimento corretamente.";
+        String detail = "Um ou mais campos estão inválidos. Faça o preenchimento correto e tente novamente.";
 
         BindingResult bindingResult = ex.getBindingResult();
 
-        List<Problem.Field> problemFields = bindingResult.getFieldErrors()
-                .stream()
+        List<Problem.Field> problemFields = bindingResult.getFieldErrors().stream()
                 .map(fieldError -> Problem.Field.builder()
-                        .name(fieldError.getObjectName())
+                        .name(fieldError.getField())
                         .userMessage(fieldError.getDefaultMessage())
                         .build())
-                        .collect(Collectors.toList());
-
+                .collect(Collectors.toList());
 
         Problem problem = createProblemBuilder(status, problemType, detail)
                 .userMessage(detail)
                 .fields(problemFields)
                 .build();
 
-        return handleExceptionInternal(ex, problem,headers, status, request);
+        return handleExceptionInternal(ex, problem, headers, status, request);
     }
 
     /*TRATA QUANDO PASSAMOS UMA PROPRIEDADE DESCONHECIDA*/

@@ -28,5 +28,11 @@ public enum ProblemType {
         return title;
     }
 
+    public void setUri(String uri) {
+        this.uri = uri;
+    }
 
+    public void setTitle(String title) {
+        this.title = title;
+    }
 }
