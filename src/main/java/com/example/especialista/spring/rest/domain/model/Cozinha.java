@@ -20,11 +20,11 @@ public class Cozinha {
     @EqualsAndHashCode.Include
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @NotNull(groups = Groups.cadastroRestaurante.class)
+    @NotNull(groups = Groups.CozinhaId.class)
     private Long id;
 
-    @Column(nullable = false)
     @NotBlank
+    @Column(nullable = false)
     private String nome;
 
     @JsonIgnore
