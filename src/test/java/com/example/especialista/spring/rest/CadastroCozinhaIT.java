@@ -1,9 +1,11 @@
 package com.example.especialista.spring.rest;
 
 
+import com.example.especialista.spring.rest.domain.model.Cozinha;
+import com.example.especialista.spring.rest.domain.repository.CozinhaRepository;
+import com.example.especialista.spring.rest.util.DatabaseCleaner;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
-import org.flywaydb.core.Flyway;
 import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
@@ -23,7 +25,13 @@ public class CadastroCozinhaIT {
     private int port;
 
     @Autowired
-    private Flyway flyway;
+    private DatabaseCleaner databaseCleaner;
+
+    @Autowired
+    private CozinhaRepository cozinhaRepository;
+
+   /* @Autowired
+    private Flyway flyway;*/
 
     @Before
     public void setup(){
@@ -31,7 +39,20 @@ public class CadastroCozinhaIT {
         RestAssured.basePath = "/cozinhas";
         RestAssured.port = port;
 
-        flyway.migrate();
+        databaseCleaner.clearTables();
+        preppararDados();
+
+        //flyway.migrate();
+    }
+
+    public void preppararDados(){
+        Cozinha cozinha1 = new Cozinha();
+        cozinha1.setNome("Tailandesa");
+        cozinhaRepository.save(cozinha1);
+
+        Cozinha cozinha2 = new Cozinha();
+        cozinha2.setNome("Americana");
+        cozinhaRepository.save(cozinha2);
     }
 
     @Test
@@ -52,8 +73,8 @@ public class CadastroCozinhaIT {
                 .when()
                 .get()
                 .then()
-                .body("", Matchers.hasSize(4))
-                .body("nome", Matchers.hasItems("Indiana", "Brasileira"));
+                .body("", Matchers.hasSize(2))
+                .body("nome", Matchers.hasItems("Americana", "Tailandesa"));
     }
 
     @Test
