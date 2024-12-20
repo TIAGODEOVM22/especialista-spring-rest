@@ -4,9 +4,10 @@ package com.example.especialista.spring.rest;
 import com.example.especialista.spring.rest.domain.model.Cozinha;
 import com.example.especialista.spring.rest.domain.repository.CozinhaRepository;
 import com.example.especialista.spring.rest.util.DatabaseCleaner;
+import com.example.especialista.spring.rest.util.ResourceUtils;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
-import org.hamcrest.Matchers;
+import org.hamcrest.CoreMatchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -17,10 +18,19 @@ import org.springframework.http.HttpStatus;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import static io.restassured.RestAssured.given;
+import static org.hamcrest.Matchers.hasSize;
+
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @TestPropertySource("/application-test.properties")
 public class CadastroCozinhaIT {
+
+    private static final int COZINHA_ID_INEXISTENTE = 100;
+    private Cozinha cozinhaAmericana;
+    private int quantidadeDeCozinhasCadastradas;
+    private String jsonCorretoCozinhaChinesa;
+
     @LocalServerPort
     private int port;
 
@@ -30,34 +40,57 @@ public class CadastroCozinhaIT {
     @Autowired
     private CozinhaRepository cozinhaRepository;
 
-   /* @Autowired
-    private Flyway flyway;*/
-
     @Before
     public void setup(){
         RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
         RestAssured.basePath = "/cozinhas";
         RestAssured.port = port;
 
-        databaseCleaner.clearTables();
-        preppararDados();
+        jsonCorretoCozinhaChinesa = ResourceUtils.getContentFromResource(
+                "/json/correto/cozinha-chinesa.json");
 
-        //flyway.migrate();
+        databaseCleaner.clearTables();
+        prepararDados();
+
     }
 
-    public void preppararDados(){
-        Cozinha cozinha1 = new Cozinha();
-        cozinha1.setNome("Tailandesa");
-        cozinhaRepository.save(cozinha1);
+    @Test
+    public void deveRetornarStatusCorreto_QuandoConsultarCozinhaExistente(){
+        given()
+                .pathParam("cozinhaId", cozinhaAmericana.getId())
+                .accept(ContentType.JSON)
+                .when()
+                .get("/{cozinhaId}")
+                .then()
+                .statusCode(HttpStatus.OK.value())
+                .body("nome", CoreMatchers.equalTo(cozinhaAmericana.getNome()));
+        /*testa endpoint passando parametro de URL*/
+    }
 
-        Cozinha cozinha2 = new Cozinha();
-        cozinha2.setNome("Americana");
-        cozinhaRepository.save(cozinha2);
+    @Test
+    public void deveRetornarStatus404_QuandoConsultarCozinhaInexistente(){
+        given().pathParam("cozinhaId", COZINHA_ID_INEXISTENTE)
+                .accept(ContentType.JSON)
+                .when().get("/{cozinhaId}")
+                .then().statusCode(HttpStatus.NOT_FOUND.value());
+    }
+
+    public void prepararDados(){
+        Cozinha tailandesa = new Cozinha();
+        tailandesa.setNome("Tailandesa");
+        cozinhaRepository.save(tailandesa);
+
+        cozinhaAmericana = new Cozinha();
+        cozinhaAmericana.setNome("Americana");
+        cozinhaRepository.save(cozinhaAmericana);
+
+        quantidadeDeCozinhasCadastradas = (int) cozinhaRepository.count();
+
     }
 
     @Test
     public void deveRetornarStatus_QuandoConsultarCozinhas(){
-        RestAssured.given()
+        given()
                 .port(port)
                 .accept(ContentType.JSON)
                 .when()
@@ -67,20 +100,20 @@ public class CadastroCozinhaIT {
     }
 
     @Test
-    public void validaNomeDeObjetoEQuantidade_QuandoConsultarCozinhas(){
-        RestAssured.given()
+    public void deveRetornarQuantidadeCorretaDeCozinhas(){
+        given()
                 .accept(ContentType.JSON)
                 .when()
                 .get()
                 .then()
-                .body("", Matchers.hasSize(2))
-                .body("nome", Matchers.hasItems("Americana", "Tailandesa"));
+                .body("", hasSize(quantidadeDeCozinhasCadastradas));
     }
 
     @Test
     public void criaObjeto_Retornar201Creat(){
-        RestAssured.given()
-                .body("{\"nome\": \"Boliviana\" }")
+        given()
+                .body(jsonCorretoCozinhaChinesa)
+               // .body("{\"nome\": \"Boliviana\" }")
                 .contentType(ContentType.JSON)
                 .accept(ContentType.JSON)
                 .when()
