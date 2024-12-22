@@ -1,0 +1,7 @@
+{
+  "nome": "Novo Restaurante Corumba",
+  "taxaFrete": 12,
+  "cozinha": {
+            "id": 1
+  }
+}

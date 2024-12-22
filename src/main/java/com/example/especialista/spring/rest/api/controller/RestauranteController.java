@@ -1,6 +1,5 @@
 package com.example.especialista.spring.rest.api.controller;
 
-import com.example.especialista.spring.rest.Groups;
 import com.example.especialista.spring.rest.domain.exception.CozinhaNaoEncontradaException;
 import com.example.especialista.spring.rest.domain.exception.NegocioException;
 import com.example.especialista.spring.rest.domain.model.Restaurante;
@@ -11,7 +10,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.http.server.ServletServerHttpRequest;

@@ -53,6 +53,18 @@ public class CadastroCozinhaIT {
         prepararDados();
 
     }
+    public void prepararDados(){
+        Cozinha tailandesa = new Cozinha();
+        tailandesa.setNome("Tailandesa");
+        cozinhaRepository.save(tailandesa);
+
+        cozinhaAmericana = new Cozinha();
+        cozinhaAmericana.setNome("Americana");
+        cozinhaRepository.save(cozinhaAmericana);
+
+        quantidadeDeCozinhasCadastradas = (int) cozinhaRepository.count();
+
+    }
 
     @Test
     public void deveRetornarStatusCorreto_QuandoConsultarCozinhaExistente(){
@@ -75,18 +87,6 @@ public class CadastroCozinhaIT {
                 .then().statusCode(HttpStatus.NOT_FOUND.value());
     }
 
-    public void prepararDados(){
-        Cozinha tailandesa = new Cozinha();
-        tailandesa.setNome("Tailandesa");
-        cozinhaRepository.save(tailandesa);
-
-        cozinhaAmericana = new Cozinha();
-        cozinhaAmericana.setNome("Americana");
-        cozinhaRepository.save(cozinhaAmericana);
-
-        quantidadeDeCozinhasCadastradas = (int) cozinhaRepository.count();
-
-    }
 
     @Test
     public void deveRetornarStatus_QuandoConsultarCozinhas(){
@@ -113,7 +113,6 @@ public class CadastroCozinhaIT {
     public void criaObjeto_Retornar201Creat(){
         given()
                 .body(jsonCorretoCozinhaChinesa)
-               // .body("{\"nome\": \"Boliviana\" }")
                 .contentType(ContentType.JSON)
                 .accept(ContentType.JSON)
                 .when()
