@@ -100,7 +100,6 @@ public class CadastroRestauranteIT {
                 .body("nome", equalTo(novoRestauranteCorumba.getNome())); // Verifica que o nome no corpo da resposta é igual ao esperado
     }
 
-
     @Test
     public void deveRetornarQuantidadeCorretaDeRestaurantes() {
         given()
