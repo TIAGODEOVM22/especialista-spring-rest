@@ -1,6 +1,7 @@
 package com.example.especialista.spring.rest.domain.model;
 
 import com.example.especialista.spring.rest.Groups;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -30,6 +31,7 @@ public class Cidade {
     @Valid
     @NotNull
     @ConvertGroup(from = Default.class, to = Groups.EstadoId.class)
+    @JsonIgnoreProperties(value = "nome", allowGetters = true)
     @ManyToOne
     @JoinColumn(nullable = false)
     private Estado estado;
