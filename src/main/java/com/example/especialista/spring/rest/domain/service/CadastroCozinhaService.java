@@ -24,6 +24,7 @@ public class CadastroCozinhaService {
 
     @Transactional
     public Cozinha salvar(Cozinha cozinha) {
+
         return cozinhaRepository.save(cozinha);
     }
 
