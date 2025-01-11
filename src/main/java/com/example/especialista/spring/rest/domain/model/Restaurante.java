@@ -29,19 +29,19 @@ public class Restaurante {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank
+    //@NotBlank
     @Column(nullable = false)
     @Size(min = 3, max = 50, message = "O nome deve ter entre {min} e {max} caracteres.")
     private String nome;
 
-    @PositiveOrZero
+    // @PositiveOrZero
     @Column(name = "taxa_frete", nullable = false)
     private BigDecimal taxaFrete;
 
     @JsonIgnoreProperties(value = "nome", allowGetters = true)
-    @Valid
-    @NotNull
-    @ConvertGroup(from = Default.class, to = Groups.CozinhaId.class)//garante a validação em cascata
+    // @Valid
+    // @NotNull
+    //@ConvertGroup(from = Default.class, to = Groups.CozinhaId.class)//garante a validação em cascata
     @ManyToOne //(fetch = FetchType.LAZY)
     @JoinColumn(name = "cozinha_id", nullable = false)
     private Cozinha cozinha;

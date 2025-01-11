@@ -23,7 +23,7 @@ public class Cozinha {
     @NotNull(groups = Groups.CozinhaId.class)
     private Long id;
 
-    @NotBlank
+    //@NotBlank
     @Column(nullable = false)
     private String nome;
 

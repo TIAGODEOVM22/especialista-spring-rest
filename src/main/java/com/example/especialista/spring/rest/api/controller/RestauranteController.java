@@ -43,6 +43,7 @@ public class RestauranteController {
     @GetMapping("/{restauranteId}")
     public RestauranteModel buscar(@PathVariable Long restauranteId) {
        Restaurante restaurante = cadastroRestaurante.buscarOuFalhar(restauranteId);
+
        return restauranteModelAssembler.toModel(restaurante);
     }
 
@@ -51,6 +52,7 @@ public class RestauranteController {
     public RestauranteModel adicionar(@RequestBody @Valid RestauranteInput restauranteInput) {
         try {
             Restaurante restaurante = restauranteInputDisAssembler.toDomainObject(restauranteInput); //transforma de dto para domain
+
             return restauranteModelAssembler.toModel(cadastroRestaurante.salvar(restaurante)) ; //transforma de domain para dto e salva
         } catch (CozinhaNaoEncontradaException e) {
             throw new NegocioException(e.getMessage());

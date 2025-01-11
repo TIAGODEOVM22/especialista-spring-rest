@@ -18,6 +18,7 @@ public class RestauranteInputDisAssembler {
         return modelMapper.map(restauranteInput, Restaurante.class);
     }
 
+    /*Ajuda a mapear de forma inteligente sem ter que expecificar as propriedades*/
     public void copyToDomainObject(RestauranteInput restauranteInput, Restaurante restaurante) {
         /*para evitar HibernetException*/
         restaurante.setCozinha(new Cozinha());

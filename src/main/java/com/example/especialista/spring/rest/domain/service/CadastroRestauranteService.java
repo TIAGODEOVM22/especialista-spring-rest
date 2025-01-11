@@ -20,8 +20,6 @@ public class CadastroRestauranteService {
     private RestauranteRepository restauranteRepository;
     @Autowired
     private CadastroCozinhaService cadastroCozinha;
-    @Autowired
-    private CozinhaRepository cozinhaRepository;
 
     @Transactional
     public Restaurante salvar(Restaurante restaurante) {
@@ -36,7 +34,7 @@ public class CadastroRestauranteService {
 
     public Restaurante buscarOuFalhar(Long restauranteId) {
         return restauranteRepository.findById(restauranteId)
-                .orElseThrow(() -> new RestauranteNaoEncontradoException(restauranteId));
+                .orElseThrow(()->
+                        new RestauranteNaoEncontradoException(restauranteId));
     }
-
 }
